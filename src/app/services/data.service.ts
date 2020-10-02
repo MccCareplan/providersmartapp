@@ -21,11 +21,11 @@ import {
   mockReferrals,
   emptyTargetData,
   mockGoalList,
-  mockMedicationSummary, emptyGoalsList, emptyMediciationSummary,
+  mockMedicationSummary, emptyGoalsList, emptyMediciationSummary, emptyVitalSigns,
 } from '../datamodel/mockData';
 import {GoalLists} from '../generated-data-api';
 // import {MedicationSummary} from '../datamodel/old/medicationSummary';
-import { MedicationSummary } from '../generated-data-api';
+import {MedicationSummary} from '../generated-data-api';
 import {Education} from '../datamodel/education';
 import {Referral} from '../datamodel/referral';
 import {map} from 'rxjs/operators';
@@ -35,12 +35,28 @@ import {ContactsService} from './contacts.service';
 import {MedicationService} from './medication.service';
 import {concatMap, tap} from 'rxjs/operators';
 import {MatTableDataSource} from '@angular/material/table';
+import {VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from '../datamodel/vitalSigns';
+import {getVitalSignsChartMonthLabels, reformatYYYYMMDD} from '../../utility-functions';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class DataService {
+
+  constructor(private subjectdataservice: SubjectDataService,
+              private careplanservice: CareplanService,
+              private goalsdataservice: GoalsDataService,
+              private contactdataService: ContactsService,
+              private medicationdataService: MedicationService) {
+    this.activeMedications = emptyMediciationSummary;
+    this.education = mockEducation;
+    this.nutrition = mockNutrition;
+    this.referrals = mockReferrals;
+    this.contacts = emptyContacts;
+    this.goals = emptyGoalsList;
+    this.vitalSigns = emptyVitalSigns;
+  }
 
   authorizationToken: string;
   mainfhirserver: string;
@@ -55,10 +71,12 @@ export class DataService {
   activeMedications: MedicationSummary[];
   inactiveMedications: MedicationSummary[];
   allGoals: GoalSummary[];
+  vitalSigns: VitalSigns;
 
   goals: GoalLists;
 
   targetValuesDataSource = new MatTableDataSource(this.targetValues);
+  vitalSignsDataSource = new MatTableDataSource(this.vitalSigns.tableData);
   activeMedicationsDataSource = new MatTableDataSource(this.activeMedications);
   consolidatedGoalsDataSource = new MatTableDataSource(this.allGoals);
 
@@ -68,21 +86,10 @@ export class DataService {
   contacts: Contact[];
 
   private commonHttpOptions;
-  constructor(private subjectdataservice: SubjectDataService,
-              private careplanservice: CareplanService,
-              private goalsdataservice: GoalsDataService,
-              private contactdataService: ContactsService,
-              private medicationdataService: MedicationService) {
-    this.activeMedications = emptyMediciationSummary;
-    this.education = mockEducation;
-    this.nutrition = mockNutrition;
-    this.referrals = mockReferrals;
-    this.contacts = emptyContacts;
-    this.goals = emptyGoalsList;
-  }
 
-  updateFHIRConnection(server: string, token: string)
-  {
+
+
+  updateFHIRConnection(server: string, token: string) {
     this.authorizationToken = token;
     console.log('Token = ' + token);
     this.mainfhirserver = server;
@@ -97,11 +104,13 @@ export class DataService {
     this.contactdataService.httpOptions = this.commonHttpOptions;
     this.medicationdataService.httpOptions = this.commonHttpOptions;
   }
+
   getCurrentPatient(): Observable<Demographic> {
     return this.subjectdataservice.getSubject(this.currentPatientId).pipe(
       map(data => data)
     );
   }
+
   async setCurrentSubject(patientId: string): Promise<boolean> {
     this.currentPatientId = patientId;
     this.targetValues = [];
@@ -175,7 +184,7 @@ export class DataService {
           this.currentCareplanId = this.careplan.fhirid;
           this.updateContacts();
           this.updateMedications();
-        }  else {
+        } else {
           this.careplan = dummyCarePlan;        // Initialize selected careplan to dummy careplan if no care plans available for subject
           this.updateContacts();
         }
@@ -245,4 +254,41 @@ export class DataService {
     return true;
   }
 
+  async getPatientVitalSigns(patientId): Promise<boolean> {
+    this.goalsdataservice.getGoals(patientId)
+      .pipe(
+        concatMap(goals => this.goalsdataservice.getPatientVitalSigns(patientId)),
+      ).subscribe(res => {
+      this.vitalSigns.tableData.push(res);
+      const systolicVitalSign: VitalSignsData = {
+        date: res.date,
+        value: res.systolic
+      };
+      const diastolicVitalSign: VitalSignsData = {
+        date: res.date,
+        value: res.diastolic
+      };
+
+      this.vitalSigns.chartData[0].data.push(systolicVitalSign);
+      this.vitalSigns.chartData[1].data.push(diastolicVitalSign);
+      this.vitalSignsDataSource.data = this.vitalSigns.tableData;
+
+
+      const vsLowDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((low, vs) =>
+        reformatYYYYMMDD(low.date) <= reformatYYYYMMDD(vs.date) ? low : vs));
+
+      const vsHighDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((high, vs) =>
+        reformatYYYYMMDD(high.date) >= reformatYYYYMMDD(vs.date) ? high : vs));
+
+      this.vitalSigns.suggestedMin = new Date(vsLowDateRow.date);
+      this.vitalSigns.months = getVitalSignsChartMonthLabels(vsHighDateRow.date);
+
+    });
+    return true;
+  }
+
+
 }
+
+
+

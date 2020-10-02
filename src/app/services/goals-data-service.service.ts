@@ -9,6 +9,11 @@ import {GoalLists, GoalTarget, MccGoal, MccObservation} from '../generated-data-
 
 import {TargetValue} from '../datamodel/old/targetvalue';
 import {formatGoalTargetValue} from '../../utility-functions';
+import {VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from '../datamodel/vitalSigns';
+enum vitalSignCodes {
+  Systolic = '8480-6',
+  Diastolic = '8462-4'
+}
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +22,7 @@ import {formatGoalTargetValue} from '../../utility-functions';
 export class GoalsDataService {
   private goalURL = '/goal';
   private observationURL = '/find/latest/observation';
+  private observationsURL = '/observations';
   private goalSummaryURL = '/goalsummary';
 
   httpOptions = {
@@ -86,6 +92,35 @@ export class GoalsDataService {
     });
   }
 
+  getPatientVitalSigns(patientId: string): Observable<VitalSignsTableData> {
+    return new Observable(observer => {
+      this.getObservations(patientId, vitalSignCodes.Systolic)
+        .subscribe(obs => {
+          let systolic = 0;
+          let diastolic = 0;
+          obs.components.map(c => {
+            switch (c.code.coding[0].code) {
+              case vitalSignCodes.Diastolic:
+                diastolic = c.value.quantityValue.value;
+                break;
+              case vitalSignCodes.Systolic:
+                systolic = c.value.quantityValue.value;
+                break;
+              default:
+            }
+          });
+          const vs: VitalSignsTableData = {
+            date: obs.effective.dateTime.date,
+            diastolic,
+            systolic
+          };
+          observer.next(vs);
+        });
+    });
+
+  }
+
+
   /** GET Goal by Goal Fhrid. Will 404 if id not found */
   getGoal(id: string): Observable<MccGoal> {
     const url = `${environment.mccapiUrl}${this.goalURL}/${id}`;
@@ -100,6 +135,14 @@ export class GoalsDataService {
     return this.http.get<MccObservation>(url, this.httpOptions).pipe(
       tap(_ => this.log(`fetched MccObservation patientId=${patientId} code=${code}`)),
       catchError(this.handleError<MccObservation>(`getMostRecentObservationResult patientId=${patientId} code=${code}`))
+    );
+  }
+
+  getObservations(patientId: string, code: string): Observable<MccObservation> {
+    const url = `${environment.mccapiUrl}${this.observationsURL}?subject=${patientId}&code=${code}`;
+    return this.http.get<MccObservation>(url, this.httpOptions).pipe(
+      tap(_ => this.log(`fetched MccObservation patientId=${patientId} code=${code}`)),
+      catchError(this.handleError<MccObservation>(`getObservations patientId=${patientId} code=${code}`))
     );
   }
 

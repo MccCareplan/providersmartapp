@@ -128,3 +128,23 @@ export function reformatYYYYMMDD(dt): string {
     return '';
   }
 }
+
+export function getVitalSignsChartMonthLabels(date: string): string[] {
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const returnMonths: string[] = [];
+  const dt = new Date(date);
+  let d: Date;
+  let month: string;
+  let year: number;
+
+  for (let i = 6; i > 0; i -= 1) {
+    d = new Date(dt.getFullYear(), dt.getMonth() - i, 1);
+    month = months[d.getMonth()];
+    year = d.getFullYear();
+    returnMonths.push(month);
+  }
+
+  return returnMonths;
+
+}
