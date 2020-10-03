@@ -10,6 +10,7 @@ import {GoalLists, GoalTarget, MccGoal, MccObservation} from '../generated-data-
 import {TargetValue} from '../datamodel/old/targetvalue';
 import {formatGoalTargetValue} from '../../utility-functions';
 import {VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from '../datamodel/vitalSigns';
+
 enum vitalSignCodes {
   Systolic = '8480-6',
   Diastolic = '8462-4'
@@ -93,28 +94,35 @@ export class GoalsDataService {
   }
 
   getPatientVitalSigns(patientId: string): Observable<VitalSignsTableData> {
+    // console.log('in getPatientVitalSigns. patiendId: ', patientId);    // todo remove after testing.
     return new Observable(observer => {
       this.getObservations(patientId, vitalSignCodes.Systolic)
-        .subscribe(obs => {
-          let systolic = 0;
-          let diastolic = 0;
-          obs.components.map(c => {
-            switch (c.code.coding[0].code) {
-              case vitalSignCodes.Diastolic:
-                diastolic = c.value.quantityValue.value;
-                break;
-              case vitalSignCodes.Systolic:
-                systolic = c.value.quantityValue.value;
-                break;
-              default:
-            }
+        .subscribe(observations => {
+          // console.log('in getPatientVitalSigns.  observations ', observations);    // todo remove after testing.
+          observations.map(obs => {
+            let systolic = 0;
+            let diastolic = 0;
+            // console.log('in getPatientVitalSigns.  obs ', obs);    // todo remove after testing.
+            // console.log('in getPatientVitalSigns.  obs.components: ', obs.components);    // todo remove after testing.
+            obs.components.map(c => {
+              switch (c.code.coding[0].code) {
+                case vitalSignCodes.Diastolic:
+                  diastolic = c.value.quantityValue.value;
+                  break;
+                case vitalSignCodes.Systolic:
+                  systolic = c.value.quantityValue.value;
+                  break;
+                default:
+              }
+            });
+            const vs: VitalSignsTableData = {
+              date: obs.effective.dateTime.date,
+              diastolic,
+              systolic
+            };
+            // console.log('in getPatientVitalSigns.  vs: ', vs);    // todo remove after testing.
+            observer.next(vs);
           });
-          const vs: VitalSignsTableData = {
-            date: obs.effective.dateTime.date,
-            diastolic,
-            systolic
-          };
-          observer.next(vs);
         });
     });
 
@@ -138,11 +146,11 @@ export class GoalsDataService {
     );
   }
 
-  getObservations(patientId: string, code: string): Observable<MccObservation> {
+  getObservations(patientId: string, code: string): Observable<MccObservation[]> {
     const url = `${environment.mccapiUrl}${this.observationsURL}?subject=${patientId}&code=${code}`;
-    return this.http.get<MccObservation>(url, this.httpOptions).pipe(
+    return this.http.get<MccObservation[]>(url, this.httpOptions).pipe(
       tap(_ => this.log(`fetched MccObservation patientId=${patientId} code=${code}`)),
-      catchError(this.handleError<MccObservation>(`getObservations patientId=${patientId} code=${code}`))
+      catchError(this.handleError<MccObservation[]>(`getObservations patientId=${patientId} code=${code}`))
     );
   }
 

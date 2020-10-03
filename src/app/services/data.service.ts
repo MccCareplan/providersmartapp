@@ -21,7 +21,7 @@ import {
   mockReferrals,
   emptyTargetData,
   mockGoalList,
-  mockMedicationSummary, emptyGoalsList, emptyMediciationSummary, emptyVitalSigns,
+  mockMedicationSummary, emptyGoalsList, emptyMediciationSummary,
 } from '../datamodel/mockData';
 import {GoalLists} from '../generated-data-api';
 // import {MedicationSummary} from '../datamodel/old/medicationSummary';
@@ -35,8 +35,10 @@ import {ContactsService} from './contacts.service';
 import {MedicationService} from './medication.service';
 import {concatMap, tap} from 'rxjs/operators';
 import {MatTableDataSource} from '@angular/material/table';
-import {VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from '../datamodel/vitalSigns';
-import {getVitalSignsChartMonthLabels, reformatYYYYMMDD} from '../../utility-functions';
+import {emptyVitalSigns, VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from '../datamodel/vitalSigns';
+import {getLineChartOptionsObject, getVitalSignsChartMonthLabels, reformatYYYYMMDD} from '../../utility-functions';
+import {patchTsGetExpandoInitializer} from '@angular/compiler-cli/ngcc/src/packages/patch_ts_expando_initializer';
+import {ChartDataSets, ChartPoint} from 'chart.js';
 
 @Injectable({
   providedIn: 'root'
@@ -71,7 +73,7 @@ export class DataService {
   activeMedications: MedicationSummary[];
   inactiveMedications: MedicationSummary[];
   allGoals: GoalSummary[];
-  vitalSigns: VitalSigns;
+  vitalSigns: VitalSigns = emptyVitalSigns;
 
   goals: GoalLists;
 
@@ -86,7 +88,6 @@ export class DataService {
   contacts: Contact[];
 
   private commonHttpOptions;
-
 
 
   updateFHIRConnection(server: string, token: string) {
@@ -116,6 +117,9 @@ export class DataService {
     this.targetValues = [];
     this.targetValuesDataSource.data = this.targetValues;
     this.activeMedications = emptyMediciationSummary;
+    this.vitalSigns = emptyVitalSigns;
+    this.vitalSignsDataSource.data = this.vitalSigns.tableData;
+
     this.activeMedicationsDataSource.data = this.activeMedications;
     if ((!patientId || patientId.trim().length === 0)) {
       this.currentPatientId = dummyPatientId;
@@ -137,6 +141,7 @@ export class DataService {
       this.getPatientGoals();
       this.updateContacts();
       this.getPatientGoalTargets(this.currentPatientId);
+      this.getPatientBPInfo(this.currentPatientId);
     }
     // this.activeMedications = mockMedicationSummary;
     this.education = mockEducation;
@@ -254,36 +259,56 @@ export class DataService {
     return true;
   }
 
-  async getPatientVitalSigns(patientId): Promise<boolean> {
-    this.goalsdataservice.getGoals(patientId)
-      .pipe(
-        concatMap(goals => this.goalsdataservice.getPatientVitalSigns(patientId)),
-      ).subscribe(res => {
-      this.vitalSigns.tableData.push(res);
-      const systolicVitalSign: VitalSignsData = {
-        date: res.date,
-        value: res.systolic
-      };
-      const diastolicVitalSign: VitalSignsData = {
-        date: res.date,
-        value: res.diastolic
-      };
+  async getPatientBPInfo(patientId): Promise<boolean> {
 
-      this.vitalSigns.chartData[0].data.push(systolicVitalSign);
-      this.vitalSigns.chartData[1].data.push(diastolicVitalSign);
-      this.vitalSignsDataSource.data = this.vitalSigns.tableData;
+    // todo fix this function....!! need to use pipe and subscribe like in getPatientGoalTargets...
+
+    console.log('in getPatientBPInfo.  patientId: ', patientId);    // todo remove after testing.
+    this.goalsdataservice.getPatientVitalSigns(patientId)
+      .subscribe(res => {
+        console.log('in getPatientBPInfo.  res: ', res);    // todo remove after testing.
+        this.vitalSigns.tableData.push(res);
+        const systolicVitalSign: ChartPoint = {
+          x: new Date(res.date),
+          y: res.systolic
+        };
+        const diastolicVitalSign: ChartPoint = {
+          x: new Date(res.date),
+          y: res.diastolic
+        };
+
+        const systolicChartData: ChartDataSets = {data: [], label: 'Systolic', fill: false};
+        const diastolicChartData: ChartDataSets = {data: [], label: 'Diastolic', fill: false};
+
+        // @ts-ignore
+        systolicChartData.data.push(systolicVitalSign);
+        // @ts-ignore
+        diastolicChartData.data.push(diastolicVitalSign);
+
+        this.vitalSigns.chartData.push(systolicChartData);
+        this.vitalSigns.chartData.push(diastolicChartData);
+        this.vitalSignsDataSource.data = this.vitalSigns.tableData;
 
 
-      const vsLowDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((low, vs) =>
-        reformatYYYYMMDD(low.date) <= reformatYYYYMMDD(vs.date) ? low : vs));
+        const vsLowDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((low, vs) =>
+          reformatYYYYMMDD(low.date) < reformatYYYYMMDD(vs.date) ? low : vs));
 
-      const vsHighDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((high, vs) =>
-        reformatYYYYMMDD(high.date) >= reformatYYYYMMDD(vs.date) ? high : vs));
+        const vsHighDateRow: VitalSignsTableData = (this.vitalSigns.tableData.reduce((high, vs) =>
+          reformatYYYYMMDD(high.date) >= reformatYYYYMMDD(vs.date) ? high : vs));
+        this.vitalSigns.mostRecentSystolic.date = vsHighDateRow.date;
+        this.vitalSigns.mostRecentSystolic.value = vsHighDateRow.systolic;
+        this.vitalSigns.mostRecentDiastolic.date = vsHighDateRow.date;
+        this.vitalSigns.mostRecentDiastolic.value = vsHighDateRow.diastolic;
 
-      this.vitalSigns.suggestedMin = new Date(vsLowDateRow.date);
-      this.vitalSigns.months = getVitalSignsChartMonthLabels(vsHighDateRow.date);
+        this.vitalSigns.suggestedMin = new Date(vsLowDateRow.date);
+        this.vitalSigns.lineChartOptions = getLineChartOptionsObject(this.vitalSigns.suggestedMin);
+        this.vitalSigns.months = getVitalSignsChartMonthLabels(vsHighDateRow.date);
 
-    });
+        console.log('in getPatientBPInfo.  vsLowDateRow: ', vsLowDateRow);       // todo remove after testing.
+        console.log('in getPatientBPInfo.  vsHighDateRow: ', vsHighDateRow);     // todo remove after testing.
+        console.log('in getPatientBPInfo.  this.vitalSigns: ', this.vitalSigns); // todo remove after testing.
+
+      });
     return true;
   }
 

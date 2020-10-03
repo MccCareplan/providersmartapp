@@ -1,23 +1,10 @@
 import {TargetValue} from './old/targetvalue';
-import {
-  Contact,
-  GoalLists,
-  GoalSummary,
-  GoalTarget,
-  MccCodeableConcept,
-  MccDosage,
-  MccReference,
-  MedicationLists,
-  MedicationSummary
-} from '../generated-data-api';
+import {ConditionLists, Contact, GoalLists, GoalSummary, GoalTarget, MccCarePlan, MedicationSummary} from '../generated-data-api';
 // import {GoalLists} from './goallists';
 import {Education} from './education';
 import {Referral} from './referral';
 import {Demographic} from './old/demographics';
-import {ConditionLists} from '../generated-data-api';
 import {Concern} from './old/socialconcerns';
-import {MccCarePlan} from '../generated-data-api';
-import {VitalSigns, VitalSignsChartData, VitalSignsData, VitalSignsTableData} from './vitalSigns';
 // import {MedicationSummary} from './old/medicationSummary';
 
 export const mockContacts: Contact[] = [
@@ -281,8 +268,6 @@ export const emptyGoalsList: GoalLists = {
   activeTargets: []
 };
 
-export const emptyVitalSignsData: VitalSignsData  = {};
-
 /*
 export const emptyVitalSignsData: VitalSignsData = {
   date: '2020-01-01',
@@ -297,29 +282,6 @@ export const emptyVitalSignsTableData: VitalSignsTableData[] = [{
   date: '2020-01-01'
 }];
 */
-
-export const emptyVitalSignsTableData: VitalSignsTableData[] = [{}];
-
-export const emptyVitalSignsChartData: VitalSignsChartData[] = [
-  {
-    data: [emptyVitalSignsData],
-    fill: false,
-    label: 'Systolic'
-  },
-  {
-    data: [emptyVitalSignsData],
-    fill: false,
-    label: 'Diastolic'
-  }];
-
-export const emptyVitalSigns: VitalSigns = {
-  mostRecentSystolic: emptyVitalSignsData,
-  mostRecentDiastolic: emptyVitalSignsData,
-  tableData: emptyVitalSignsTableData,
-  chartData: emptyVitalSignsChartData,
-  months: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  suggestedMin: new Date('2020-01-01')
-};
 
 export const mockGoalList: GoalLists = {
   activeClinicalGoals: [

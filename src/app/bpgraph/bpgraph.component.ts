@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ChartDataSets, ChartOptions } from 'chart.js';
 import { Color, Label } from 'ng2-charts';
+import {DataService} from '../services/data.service';
 
 
 @Component({
@@ -115,9 +116,14 @@ export class BPGraphComponent implements OnInit {
     }];
   lineChartType = 'line';
 
-  constructor() { }
+  constructor(public dataservice: DataService) {
+
+  }
 
   ngOnInit(): void {
+
+
+
   }
 
 }

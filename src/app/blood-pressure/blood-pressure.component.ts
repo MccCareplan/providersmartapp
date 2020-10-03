@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {DataService} from '../services/data.service';
+import {GoalsDataService} from '../services/goals-data-service.service';
 
 @Component({
   selector: 'app-blood-pressure',
@@ -7,9 +9,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BloodPressureComponent implements OnInit {
 
-  constructor() { }
+  vitalSignsDataSource = this.dataservice.vitalSignsDataSource;
+
+  constructor(public dataservice: DataService, public goalsdataservice: GoalsDataService) { }
+  displayedColumns = ['date', 'systolic', 'diastolic'];
 
   ngOnInit(): void {
+  }
+
+  refreshVitalSigns = () => {
+    this.vitalSignsDataSource = this.dataservice.vitalSignsDataSource;
   }
 
 }

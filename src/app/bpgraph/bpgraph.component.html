@@ -1,8 +1,19 @@
 <div class="chart-wrapper">
+<!--
   <canvas baseChart
           [datasets]="lineChartData"
           [labels]="lineChartLabels"
           [options]="lineChartOptions"
+          [colors]="lineChartColors"
+          [legend]="lineChartLegend"
+          [chartType]="lineChartType"
+          [plugins]="lineChartPlugins" height="200">
+  </canvas>
+  -->
+  <canvas baseChart
+          [datasets]="this.dataservice.vitalSigns.chartData"
+          [labels]="this.dataservice.vitalSigns.months"
+          [options]="this.dataservice.vitalSigns.lineChartOptions"
           [colors]="lineChartColors"
           [legend]="lineChartLegend"
           [chartType]="lineChartType"

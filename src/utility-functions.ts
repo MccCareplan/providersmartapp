@@ -1,4 +1,5 @@
 import {GoalTarget} from './app/generated-data-api';
+import {Label} from 'ng2-charts';
 
 export function formatGoalTargetValue(target: GoalTarget, mostRecentResultValue: string): any[] {
   let formatted = 'Unknown Type: ';
@@ -129,7 +130,7 @@ export function reformatYYYYMMDD(dt): string {
   }
 }
 
-export function getVitalSignsChartMonthLabels(date: string): string[] {
+export function getVitalSignsChartMonthLabels(date: string): Label[] {
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const returnMonths: string[] = [];
@@ -139,12 +140,40 @@ export function getVitalSignsChartMonthLabels(date: string): string[] {
   let year: number;
 
   for (let i = 6; i > 0; i -= 1) {
-    d = new Date(dt.getFullYear(), dt.getMonth() - i, 1);
+    d = new Date(dt.getFullYear(), dt.getMonth() + 1 - i, 1);
     month = months[d.getMonth()];
     year = d.getFullYear();
     returnMonths.push(month);
   }
 
   return returnMonths;
+
+}
+
+export function getLineChartOptionsObject(suggestedMinDate: Date): { }   {
+  return  {
+    responsive: false,
+    maintainAspectRatio: true,
+    scales: {
+      yAxes: {
+        ticks: {
+          suggestedMax: 180
+        }
+      },
+      xAxes: {
+        type: 'time',
+        ticks: {
+          suggestedMin: suggestedMinDate,
+        },
+        time: {
+          unit: 'day',
+          displayFormats: {
+            day: 'MMM D'
+          },
+          tooltipFormat: 'll MMM D'
+        }
+      }
+    }
+  };
 
 }
