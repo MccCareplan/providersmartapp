@@ -175,5 +175,4 @@ export function getLineChartOptionsObject(suggestedMinDate: Date): { }   {
       }
     }
   };
-
 }

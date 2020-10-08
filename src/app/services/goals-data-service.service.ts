@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
-import {catchError, tap} from 'rxjs/operators';
+import {catchError, finalize, tap} from 'rxjs/operators';
 import {MessageService} from './message.service';
 
 import {environment} from '../../environments/environment';
@@ -97,6 +97,7 @@ export class GoalsDataService {
     // console.log('in getPatientVitalSigns. patiendId: ', patientId);    // todo remove after testing.
     return new Observable(observer => {
       this.getObservations(patientId, vitalSignCodes.Systolic)
+        .pipe(  finalize(() => {observer.complete(); }))
         .subscribe(observations => {
           // console.log('in getPatientVitalSigns.  observations ', observations);    // todo remove after testing.
           observations.map(obs => {
