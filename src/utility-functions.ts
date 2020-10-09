@@ -130,47 +130,30 @@ export function reformatYYYYMMDD(dt): string {
   }
 }
 
-export function getVitalSignsChartMonthLabels(date: string): Label[] {
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const returnMonths: string[] = [];
-  const dt = new Date(date);
-  let d: Date;
-  let month: string;
-  let year: number;
-
-  for (let i = 6; i > 0; i -= 1) {
-    d = new Date(dt.getFullYear(), dt.getMonth() + 1 - i, 1);
-    month = months[d.getMonth()];
-    year = d.getFullYear();
-    returnMonths.push(month);
-  }
-
-  return returnMonths;
-
-}
-
-export function getLineChartOptionsObject(suggestedMinDate: Date): { }   {
+export function getLineChartOptionsObject(suggestedMinDate: Date, suggestedMaxDate: Date): { }   {
   return  {
     responsive: false,
     maintainAspectRatio: true,
     scales: {
       yAxes: {
         ticks: {
-          suggestedMax: 180
+          suggestedMax: 180,
+          suggestedMin: 50
         }
       },
       xAxes: {
         type: 'time',
         ticks: {
           suggestedMin: suggestedMinDate,
+          suggestedMax: suggestedMaxDate
         },
         time: {
           unit: 'day',
+          format: 'dateFormat',
           displayFormats: {
-            day: 'MMM D'
+            day: 'MMM DD'
           },
-          tooltipFormat: 'll MMM D'
+          tooltipFormat: 'MMM dd YYYY'
         }
       }
     }

@@ -29,8 +29,9 @@ interface VitalSigns {
   mostRecentDiastolic?: VitalSignsDataForDisplay;
   tableData?: Array<VitalSignsTableData>;
   chartData?: Array<ChartDataSets>;
-  months?: Array<Label>;
+  xAxisLabels?: Array<Label>;
   suggestedMin?: Date;
+  suggestedMax?: Date;
   lineChartOptions?: { };
 }
 
@@ -80,9 +81,10 @@ const emptyVitalSigns: VitalSigns = {
   mostRecentDiastolic: {},
   tableData: emptyVitalSignsTableData,
   chartData: emptyVitalSignsChartData,
-  months: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  xAxisLabels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   suggestedMin: new Date('2020-01-01'),
-  lineChartOptions: getLineChartOptionsObject(new Date('2016-11-30'))
+  suggestedMax: new Date('2020-06-30'),
+  lineChartOptions: getLineChartOptionsObject(new Date('2020-01-01'),  new Date('2020-06-30'))
 };
 
 export {

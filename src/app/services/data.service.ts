@@ -43,9 +43,10 @@ import {
   VitalSignsData,
   VitalSignsTableData
 } from '../datamodel/vitalSigns';
-import {getLineChartOptionsObject, getVitalSignsChartMonthLabels, reformatYYYYMMDD} from '../../utility-functions';
+import {getLineChartOptionsObject, reformatYYYYMMDD} from '../../utility-functions';
 import {patchTsGetExpandoInitializer} from '@angular/compiler-cli/ngcc/src/packages/patch_ts_expando_initializer';
 import {ChartDataSets, ChartPoint} from 'chart.js';
+import * as moment from 'moment';
 
 @Injectable({
   providedIn: 'root'
@@ -211,13 +212,11 @@ export class DataService {
     return true;
   }
 
-
   async updateContacts(): Promise<boolean> {
     this.contactdataService.getContactsBySubjectAndCareplan(this.currentPatientId, this.currentCareplanId)
       .subscribe(contacts => this.contacts = contacts);
     return true;
   }
-
 
   async updateMedications(): Promise<boolean> {
     this.medicationdataService.getMedicationSummaryBySubjectAndCareplan(this.currentPatientId, this.currentCareplanId)
@@ -268,12 +267,11 @@ export class DataService {
 
   async getPatientBPInfo(patientId): Promise<boolean> {
 
-    console.log('in getPatientBPInfo.  patientId: ', patientId);    // todo remove after testing.
     this.vitalSigns = emptyVitalSigns;
     this.vitalSigns.chartData = [];
     const systolicChartData: ChartDataSets = {data: [], label: 'Systolic', fill: false};
     const diastolicChartData: ChartDataSets = {data: [], label: 'Diastolic', fill: false};
-
+    const xAxisLabels: string[] = [];
     this.goalsdataservice.getPatientVitalSigns(patientId)
       .pipe(
         finalize(() => {
@@ -289,15 +287,21 @@ export class DataService {
           this.vitalSigns.mostRecentDiastolic.date = vsHighDateRow.date;
           this.vitalSigns.mostRecentDiastolic.value = vsHighDateRow.diastolic;
           this.vitalSigns.suggestedMin = new Date(vsLowDateRow.date);
-          this.vitalSigns.lineChartOptions = getLineChartOptionsObject(this.vitalSigns.suggestedMin);
-          this.vitalSigns.months = getVitalSignsChartMonthLabels(vsHighDateRow.date);
-          console.log('in getPatientBPInfo. (finalize) vsLowDateRow: ', vsLowDateRow);       // todo remove after testing.
-          console.log('in getPatientBPInfo. (finalize) vsHighDateRow: ', vsHighDateRow);     // todo remove after testing.
-          console.log('in getPatientBPInfo. (finalize) this.vitalSigns: ', this.vitalSigns); // todo remove after testing.
+          this.vitalSigns.suggestedMax = new Date(vsHighDateRow.date);
+          this.vitalSigns.lineChartOptions = getLineChartOptionsObject(this.vitalSigns.suggestedMin, this.vitalSigns.suggestedMax);
+          this.vitalSigns.xAxisLabels = xAxisLabels;
+          this.vitalSigns.tableData.map( vs => {
+            /* if (vs.date === this.vitalSigns.tableData[0].date
+              || vs.date === this.vitalSigns.tableData[this.vitalSigns.tableData.length - 1].date) {
+              this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('ll'));
+            } else {
+              this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('MMM DD'));
+            }*/
+            this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('MMM DD'));
+          });
         })
       )
       .subscribe(res => {
-        console.log('in getPatientBPInfo.  res: ', res);    // todo remove after testing.
         this.vitalSigns.tableData.push(res);
         const systolicVitalSign: ChartPoint = {
           x: new Date(res.date),

@@ -94,17 +94,13 @@ export class GoalsDataService {
   }
 
   getPatientVitalSigns(patientId: string): Observable<VitalSignsTableData> {
-    // console.log('in getPatientVitalSigns. patiendId: ', patientId);    // todo remove after testing.
     return new Observable(observer => {
       this.getObservations(patientId, vitalSignCodes.Systolic)
         .pipe(  finalize(() => {observer.complete(); }))
         .subscribe(observations => {
-          // console.log('in getPatientVitalSigns.  observations ', observations);    // todo remove after testing.
           observations.map(obs => {
             let systolic = 0;
             let diastolic = 0;
-            // console.log('in getPatientVitalSigns.  obs ', obs);    // todo remove after testing.
-            // console.log('in getPatientVitalSigns.  obs.components: ', obs.components);    // todo remove after testing.
             obs.components.map(c => {
               switch (c.code.coding[0].code) {
                 case vitalSignCodes.Diastolic:
@@ -121,7 +117,6 @@ export class GoalsDataService {
               diastolic,
               systolic
             };
-            // console.log('in getPatientVitalSigns.  vs: ', vs);    // todo remove after testing.
             observer.next(vs);
           });
         });
