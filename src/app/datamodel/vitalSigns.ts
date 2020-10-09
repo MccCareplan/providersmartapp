@@ -35,35 +35,8 @@ interface VitalSigns {
   lineChartOptions?: { };
 }
 
-
-/*
-interface VitalSigns {
-  mostRecentSystolic?: VitalSignsDataForDisplay;
-  mostRecentDiastolic?: VitalSignsDataForDisplay;
-  tableData?: Array<VitalSignsTableData>;
-  chartData?: Array<VitalSignsChartData>;
-  months?: Array<string>;
-  suggestedMin?: Date;
-}
-*/
-
 const emptyVitalSignsData: ChartPoint = {};
-// const emptyVitalSignsData: VitalSignsData = {};
-// const emptyVitalSignsTableData: VitalSignsTableData[] = [{}];
 const emptyVitalSignsTableData: VitalSignsTableData[] = [];
-/*
-const emptyVitalSignsChartData: VitalSignsChartData[] = [
-  {
-    data: [emptyVitalSignsData],
-    fill: false,
-    label: 'Systolic'
-  },
-  {
-    data: [emptyVitalSignsData],
-    fill: false,
-    label: 'Diastolic'
-  }];
-*/
 const emptyVitalSignsChartData: ChartDataSets[] = [
   {
     data: [emptyVitalSignsData],

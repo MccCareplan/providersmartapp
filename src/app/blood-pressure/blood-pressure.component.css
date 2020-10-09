@@ -1,5 +1,7 @@
 mat-table {
   vertical-align: top;
+  overflow: auto;
+  max-height: 400px;
 }
 
 tr.mat-table {

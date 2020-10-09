@@ -37,10 +37,7 @@ import {concatMap, tap} from 'rxjs/operators';
 import {MatTableDataSource} from '@angular/material/table';
 import {
   emptyVitalSigns,
-  emptyVitalSignsChartData,
   VitalSigns,
-  VitalSignsChartData,
-  VitalSignsData,
   VitalSignsTableData
 } from '../datamodel/vitalSigns';
 import {getLineChartOptionsObject, reformatYYYYMMDD} from '../../utility-functions';
@@ -135,7 +132,6 @@ export class DataService {
       this.demographic = dummySubject;
       this.conditions = dummyConditions;
       // this.goals  = emptyGoalsList;
-      this.goals = dummyGoals;
     } else {
       /*
        this.subjectdataservice.getSubject(this.currentPatientId)
@@ -267,14 +263,21 @@ export class DataService {
 
   async getPatientBPInfo(patientId): Promise<boolean> {
 
-    this.vitalSigns = emptyVitalSigns;
-    this.vitalSigns.chartData = [];
+    console.log(`in getPatientBPInfo: PatientId: ${patientId} this.vitalSigns: `, this.vitalSigns);
+
+
     const systolicChartData: ChartDataSets = {data: [], label: 'Systolic', fill: false};
     const diastolicChartData: ChartDataSets = {data: [], label: 'Diastolic', fill: false};
+    // const xAxisLabels: string[] = [];
     const xAxisLabels: string[] = [];
+    this.vitalSigns = emptyVitalSigns;
+    this.vitalSigns.tableData = [];
+    this.vitalSigns.chartData = [];
+
     this.goalsdataservice.getPatientVitalSigns(patientId)
       .pipe(
         finalize(() => {
+          console.log('in getPatientBPInfo: (finalize) PatientId: ${patientId}: this.vitalSigns: ', this.vitalSigns);
           this.vitalSigns.chartData.push(systolicChartData);
           this.vitalSigns.chartData.push(diastolicChartData);
           this.vitalSignsDataSource.data = this.vitalSigns.tableData;
@@ -290,24 +293,31 @@ export class DataService {
           this.vitalSigns.suggestedMax = new Date(vsHighDateRow.date);
           this.vitalSigns.lineChartOptions = getLineChartOptionsObject(this.vitalSigns.suggestedMin, this.vitalSigns.suggestedMax);
           this.vitalSigns.xAxisLabels = xAxisLabels;
+          let yr = '';
+          let prevYr = '';
           this.vitalSigns.tableData.map( vs => {
-            /* if (vs.date === this.vitalSigns.tableData[0].date
-              || vs.date === this.vitalSigns.tableData[this.vitalSigns.tableData.length - 1].date) {
-              this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('ll'));
+            if (moment(vs.date.toString()).format('YYYY') !== prevYr ) {
+              yr = moment(vs.date.toString()).format('YYYY');
+              prevYr = yr;
             } else {
-              this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('MMM DD'));
-            }*/
-            this.vitalSigns.xAxisLabels.push(moment(vs.date.toString()).format('MMM DD'));
+              yr = '';
+            }
+            // @ts-ignore
+            xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
+              moment(vs.date.toString()).format('DD'),
+              yr]
+            );
           });
+          this.vitalSigns.xAxisLabels = xAxisLabels;
         })
       )
       .subscribe(res => {
         this.vitalSigns.tableData.push(res);
-        const systolicVitalSign: ChartPoint = {
+        const systolicVitalSign = {
           x: new Date(res.date),
           y: res.systolic
         };
-        const diastolicVitalSign: ChartPoint = {
+        const diastolicVitalSign  = {
           x: new Date(res.date),
           y: res.diastolic
         };

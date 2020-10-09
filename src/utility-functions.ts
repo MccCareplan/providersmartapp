@@ -131,7 +131,8 @@ export function reformatYYYYMMDD(dt): string {
 }
 
 export function getLineChartOptionsObject(suggestedMinDate: Date, suggestedMaxDate: Date): { }   {
-  return  {
+  const opts =
+   {
     responsive: false,
     maintainAspectRatio: true,
     scales: {
@@ -151,11 +152,27 @@ export function getLineChartOptionsObject(suggestedMinDate: Date, suggestedMaxDa
           unit: 'day',
           format: 'dateFormat',
           displayFormats: {
-            day: 'MMM DD'
+            day: 'MMM'
           },
-          tooltipFormat: 'MMM dd YYYY'
+          tooltipFormat: 'MM-DD-YYYY',
         }
       }
     }
   };
+
+  /*
+
+            millisecond: 'MMM DD',
+            second: 'MMM DD',
+            minute: 'MMM DD',
+            hour: 'MMM DD',
+            day: 'MMM DD',
+            week: 'MMM DD',
+            month: 'MMM DD',
+            quarter: 'MMM DD',
+            year: 'MMM DD',
+   */
+
+  // console.log('Line Chart Options: ', opts);
+  return opts;
 }

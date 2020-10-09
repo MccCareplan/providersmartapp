@@ -62,7 +62,5 @@ export class ConsolidatedGoalsComponent implements OnInit, AfterViewInit {
     this.sort.direction = sortState.direction;
     this.sort.sortChange.emit(sortState);
 
-
-
   }
 }

@@ -3,12 +3,12 @@
   <tr>
     <td>Systolic Blood Pressure</td>
     <td>{{this.dataservice.vitalSigns.mostRecentSystolic.value}}</td>
-    <td>{{this.dataservice.vitalSigns.mostRecentSystolic.date}}</td>
+    <td>{{this.dataservice.vitalSigns.mostRecentSystolic.date | date: 'MM/dd/yyyy'}}</td>
   </tr>
   <tr>
     <td>Diastolic Blood Pressure</td>
     <td>{{this.dataservice.vitalSigns.mostRecentDiastolic.value}}</td>
-    <td>{{this.dataservice.vitalSigns.mostRecentDiastolic.date}}</td>
+    <td>{{this.dataservice.vitalSigns.mostRecentDiastolic.date | date: 'MM/dd/yyyy'}}</td>
   </tr>
   <tr>
     <td colspan="3">
