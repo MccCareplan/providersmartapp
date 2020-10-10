@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {DataService} from '../services/data.service';
 
 @Component({
@@ -8,7 +8,9 @@ import {DataService} from '../services/data.service';
 })
 export class CareTeamComponent implements OnInit {
   gridColumns = 4;
-  constructor(public dataservice: DataService) {}
+
+  constructor(public dataservice: DataService) {
+  }
 
   ngOnInit(): void {
 
