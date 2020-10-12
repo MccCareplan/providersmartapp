@@ -3,18 +3,8 @@
     <mat-card class="mat-elevation-z4">
       <!--<mat-card-title>{{contact.role.replace('_', ' ') | titlecase }}</mat-card-title>-->
       <mat-card-header>
-        <mat-icon mat-card-avatar *ngIf="contact.type.toLowerCase() === 'person'">person</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.type.toLowerCase() === 'organization'">group</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('patient')">person</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('catering')">food_bank</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('physician')">medical_services</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('ologist')">medical_services</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('caregiver')">medical_services</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('nurse')">medical_services</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('dietician')">fastfood</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('social worker')">psychology</mat-icon>
-        <mat-icon mat-card-avatar *ngIf="contact.role.toLowerCase().includes('pharmacist')">medical_services</mat-icon>
-
+        <mat-icon mat-card-avatar>{{getTypeIcon(contact.type)}}</mat-icon>
+        <mat-icon mat-card-avatar>{{getRoleIcon(contact.role)}}</mat-icon>
         <mat-card-title>{{contact.name}}</mat-card-title>
       </mat-card-header>
 
