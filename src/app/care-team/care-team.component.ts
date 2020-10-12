@@ -39,7 +39,6 @@ export class CareTeamComponent implements OnInit {
 
   getTypeIcon(type) {
      const icon = this.iconNames.types.filter( t => type.toLowerCase().includes(t.type.toLowerCase()));
-     console.log('in getTypeIcon() type: ', type, 'icon: ', icon);
      if (icon.length >  0) {
        return icon[0].icon;
      } else {
@@ -49,7 +48,6 @@ export class CareTeamComponent implements OnInit {
 
   getRoleIcon(role) {
     const icon = this.iconNames.roles.filter( r => role.toLowerCase().includes(r.role.toLowerCase()));
-    console.log('in getRoleIcon() role: ', role, 'icon: ', icon);
     if (icon.length > 0) {
       return icon[0].icon;
     } else {
