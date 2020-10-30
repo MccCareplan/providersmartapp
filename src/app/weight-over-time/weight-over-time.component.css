@@ -1,7 +1,37 @@
-.resultBorderline{
+chart-wrapper {
+  height: 150px;
+  width: 200px;
+}
+
+mat-table {
+  vertical-align: top;
+  overflow: auto;
+  max-height: 400px;
+}
+
+tr.mat-table {
+  vertical-align: top;
+  min-width: 350px;
+}
+
+tr.mat-header-row {
+  min-height: 24px;
+  height: 24px !important;
+}
+
+tr.mat-row {
+  min-height: 24px;
+  height: 24px !important;
+}
+
+tr.mat-row.resultBorderline{
   background-color: lightgoldenrodyellow;
 }
 
-.resultGood{
+tr.mat-row.resultGood{
   background-color: palegreen;
+}
+
+tr.mat-row.resultCritical{
+  background-color: lightpink;
 }

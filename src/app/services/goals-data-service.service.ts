@@ -12,12 +12,14 @@ import {formatGoalTargetValue} from '../../utility-functions';
 import {VitalSignsTableData} from '../datamodel/vitalSigns';
 import {EgfrTableData} from '../datamodel/egfr';
 import {UacrTableData} from '../datamodel/uacr';
+import {WotTableData} from "../datamodel/weight-over-time";
 
 enum observationCodes {
   Systolic = '8480-6',
   Diastolic = '8462-4',
   Egfr = '69405-9',
-  Uacr = '9318-7'
+  Uacr = '9318-7',
+  Wot = '29463-7'
 }
 
 enum observationValuesets {
@@ -176,6 +178,31 @@ export class GoalsDataService {
                   test: obs.code.text
                 };
                 observer.next(uacr);
+                break;
+              default:
+            }
+          });
+        });
+    });
+  }
+
+  getPatientWot(patientId: string): Observable<WotTableData> {
+    return new Observable(observer => {
+      this.getObservations(patientId, observationCodes.Wot)
+        .pipe(finalize(() => {
+          observer.complete();
+        }))
+        .subscribe(observations => {
+          observations.map(obs => {
+            switch (obs.code.coding[0].code) {
+              case observationCodes.Wot:
+                const wot: WotTableData = {
+                  date: obs.effective.dateTime.date,
+                  value: obs.value.quantityValue.value,
+                  unit: obs.value.quantityValue.unit,
+                  test: obs.code.text
+                };
+                observer.next(wot);
                 break;
               default:
             }

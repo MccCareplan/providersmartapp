@@ -51,12 +51,19 @@ import {
   emptyUacr
 } from '../datamodel/uacr';
 import {
+  WotTableData,
+  Wot,
+  emptyWot
+} from '../datamodel/weight-over-time';
+import {
   formatEgfrResult,
   formatUacrResult,
   getEgrLineChartAnnotationsObject,
   getUacrLineChartAnnotationsObject,
   getLineChartOptionsObject,
-  reformatYYYYMMDD
+  reformatYYYYMMDD,
+  formatWotResult,
+  getWotLineChartAnnotationsObject
 } from '../../utility-functions';
 import {patchTsGetExpandoInitializer} from '@angular/compiler-cli/ngcc/src/packages/patch_ts_expando_initializer';
 import {ChartDataSets, ChartPoint} from 'chart.js';
@@ -82,6 +89,7 @@ export class DataService {
     this.vitalSigns = emptyVitalSigns;
     this.egfr = emptyEgfr;
     this.uacr = emptyUacr;
+    this.wot = emptyWot;
   }
 
   authorizationToken: string;
@@ -100,6 +108,7 @@ export class DataService {
   vitalSigns: VitalSigns = emptyVitalSigns;
   egfr: Egfr = emptyEgfr;
   uacr: Uacr = emptyUacr;
+  wot: Wot = emptyWot;
 
   goals: GoalLists;
 
@@ -107,6 +116,7 @@ export class DataService {
   vitalSignsDataSource = new MatTableDataSource(this.vitalSigns.tableData);
   egfrDataSource = new MatTableDataSource(this.egfr.tableData);
   uacrDataSource = new MatTableDataSource(this.uacr.tableData);
+  wotDataSource = new MatTableDataSource(this.wot.tableData);
   activeMedicationsDataSource = new MatTableDataSource(this.activeMedications);
   consolidatedGoalsDataSource = new MatTableDataSource(this.allGoals);
 
@@ -171,14 +181,14 @@ export class DataService {
       this.getPatientBPInfo(this.currentPatientId);
       this.getPatientEgfrInfo(this.currentPatientId);
       this.getPatientUacrInfo(this.currentPatientId);
+      this.getPatientWotInfo(this.currentPatientId);
     }
     // this.activeMedications = mockMedicationSummary;
     this.education = mockEducation;
     this.nutrition = mockNutrition;
     this.referrals = mockReferrals;
     this.contacts = emptyContacts;
-    // this.targetValues = emptyTargetData;
-
+    // this.targetValue
     return true;
 
   }
@@ -468,6 +478,66 @@ export class DataService {
 
     return true;
   }
+
+  async getPatientWotInfo(patientId): Promise<boolean> {
+    const wotChartData: ChartDataSets = {data: [], label: 'Wot', fill: false};
+    const xAxisLabels: string[] = [];
+    this.wot = emptyWot;
+    this.wot.tableData = [];
+    this.wot.chartData = [];
+    this.goalsdataservice.getPatientWot(patientId)
+      .pipe(
+        finalize(() => {
+          this.wot.chartData.push(wotChartData);
+          this.wotDataSource.data = this.wot.tableData;
+          const vsLowDateRow: WotTableData = (this.wot.tableData.reduce((low, e) =>
+            reformatYYYYMMDD(low.date) < reformatYYYYMMDD(e.date) ? low : e));
+          const vsHighDateRow: WotTableData = (this.wot.tableData.reduce((high, e) =>
+            reformatYYYYMMDD(high.date) >= reformatYYYYMMDD(e.date) ? high : e));
+          this.wot.mostRecentWot.date = vsHighDateRow.date;
+          this.wot.mostRecentWot.value = vsHighDateRow.value;
+          this.wot.mostRecentWot.unit = vsHighDateRow.unit;
+          this.wot.mostRecentWot.test = vsHighDateRow.test;
+          this.wot.mostRecentWot.result = formatWotResult(vsHighDateRow.value, vsHighDateRow.unit);
+          const minDate = new Date(moment(vsLowDateRow.date.toString()).startOf('month').format('MMMM DD YYYY H:mm A'));
+          this.wot.suggestedMin = minDate;
+          const maxDate = new Date(moment(vsHighDateRow.date.toString()).add(1, 'M').startOf('month').format('YYYY-MM-DD hh:mm:ss'));
+          this.wot.suggestedMax = maxDate;
+          const lineChartOptions = getLineChartOptionsObject(0, 280, this.wot.suggestedMin, this.wot.suggestedMax);
+          const lineChartAnnotations = getWotLineChartAnnotationsObject();
+          this.wot.lineChartOptions = {...lineChartOptions, annotation: lineChartAnnotations};
+          this.wot.xAxisLabels = [];
+          let yr = '';
+          let prevYr = '';
+          this.wot.tableData.map(vs => {
+            if (moment(vs.date.toString()).format('YYYY') !== prevYr) {
+              yr = moment(vs.date.toString()).format('YYYY');
+              prevYr = yr;
+            } else {
+              yr = '';
+            }
+            // @ts-ignore
+            xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
+              moment(vs.date.toString()).format('DD'),
+              yr]
+            );
+          });
+          this.wot.xAxisLabels = xAxisLabels;
+        })
+      )
+      .subscribe(res => {
+        this.wot.tableData.push(res);
+        const wot = {
+          x: new Date(res.date),
+          y: res.value
+        };
+        // @ts-ignore
+        wotChartData.data.push(wot);
+      });
+
+    return true;
+  }
+
 
 }
 
