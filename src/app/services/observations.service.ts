@@ -15,7 +15,7 @@ export class ObservationsService {
 
     _observationUrl = "find/latest/observation";
     getObservation(patientId: string, code: string): Promise<any> {
-        const key = patientId + code;
+        const key = patientId + "-" + code;
 
         if (this.OBSERVATIONS.has(key)) {
             return Promise.resolve(this.OBSERVATIONS.get(key));
@@ -31,7 +31,7 @@ export class ObservationsService {
 
     _observationByValueSetUrl = "observationsbyvalueset"
     getObservationsByValueSet = (patientId: string, valueSet: string): Promise<any> => {
-        const key = patientId + valueSet;
+        const key = patientId + "-" + valueSet;
 
         if (this.OBSERVATIONS.has(key)) {
             return Promise.resolve(this.OBSERVATIONS.get(key));
@@ -44,16 +44,15 @@ export class ObservationsService {
                 });
         }
     }
+
+    _observationsByPanelUrl = "observations"
+    getObservationsByPanel(patientId: string, code: string): Promise<any> {
+        const key = patientId + "-" + code + "-panel";
+
+        return this.http.get(`${environment.mccapiUrl}/${this._observationsByPanelUrl}?subject=${patientId}&code=${code}&mode=panel`, this.HTTP_OPTIONS).toPromise()
+            .then(res => {
+                this.OBSERVATIONS.set(key, res);
+                return res;
+            });
+    }
 }
-
-
-// getObservationsByPanel(patientId: string, code: string): Promise < any > {
-//     const successHandler = (resp: HttpResponse<any>) => {
-//         debugger;
-//     }
-//         const errorHandler = (resp: HttpErrorResponse) => {
-//         debugger;
-//     }
-
-//         return this.http.get(`${environment.mccapiUrl}/${this._observationsUrl}?subject=${patientId}&code=${code}&mode=panel`, this.HTTP_OPTIONS).toPromise().then(successHandler).catch(errorHandler);
-// }
