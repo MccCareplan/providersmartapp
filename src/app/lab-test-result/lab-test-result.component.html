@@ -6,9 +6,9 @@
     <td><b>Date</b></td>
   </tr>
   <tr>
-    <td>{{this.dataservice.egfr.mostRecentEgfr.test}}</td>
-    <td [innerHTML]="this.dataservice.egfr.mostRecentEgfr.result"></td>
-    <td>{{this.dataservice.egfr.mostRecentEgfr.date | date: 'MM/dd/yyyy'}}</td>
+    <td>{{latestEgfr.code.text}}</td>
+    <td>{{latestEgfr.value.quantityValue.value + " " +latestEgfr.value.quantityValue.unit}}</td>
+    <td>{{latestEgfr.effective.dateTime.date | date: 'MM/dd/yyyy'}}</td>
   </tr>
   <tr>
     <td colspan="3">
@@ -38,7 +38,9 @@
     </td>
   </tr>
   <tr>
-    <td colspan="3"><app-uacr></app-uacr></td>
+    <td colspan="3">
+      <app-uacr></app-uacr>
+    </td>
   </tr>
   <tr>
     <td>
@@ -251,5 +253,3 @@
   </tr>
 
 </table>
-
-

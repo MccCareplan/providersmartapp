@@ -1,12 +1,12 @@
-import {Injectable} from '@angular/core';
-import {MccPatient} from '../generated-data-api';
-import {SubjectDataService} from './subject-data-service.service';
-import {CareplanService} from './careplan.service';
-import {GoalsDataService} from './goals-data-service.service';
-import {Contact, GoalSummary, MccCarePlan} from '../generated-data-api';
-import {SocialConcern} from '../generated-data-api';
-import {ConditionLists} from '../generated-data-api';
-import {TargetValue} from '../datamodel/targetvalue';
+import { Injectable } from '@angular/core';
+import { MccPatient } from '../generated-data-api';
+import { SubjectDataService } from './subject-data-service.service';
+import { CareplanService } from './careplan.service';
+import { GoalsDataService } from './goals-data-service.service';
+import { Contact, GoalSummary, MccCarePlan } from '../generated-data-api';
+import { SocialConcern } from '../generated-data-api';
+import { ConditionLists } from '../generated-data-api';
+import { TargetValue } from '../datamodel/targetvalue';
 import {
   dummyPatientId,
   dummyCareplanId,
@@ -18,15 +18,15 @@ import {
   emptyCounseling,
   emptyGoalsList, emptyMediciationSummary, emptyEducation, emptyReferrals,
 } from '../datamodel/mockData';
-import {GoalLists} from '../generated-data-api';
-import {MedicationSummary} from '../generated-data-api';
-import {finalize, map} from 'rxjs/operators';
-import {Observable} from 'rxjs';
-import {HttpHeaders} from '@angular/common/http';
-import {ContactsService} from './contacts.service';
-import {MedicationService} from './medication.service';
-import {concatMap, tap} from 'rxjs/operators';
-import {MatTableDataSource} from '@angular/material/table';
+import { GoalLists } from '../generated-data-api';
+import { MedicationSummary } from '../generated-data-api';
+import { finalize, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
+import { ContactsService } from './contacts.service';
+import { MedicationService } from './medication.service';
+import { concatMap, tap } from 'rxjs/operators';
+import { MatTableDataSource } from '@angular/material/table';
 import {
   emptyVitalSigns,
   VitalSigns,
@@ -57,8 +57,8 @@ import {
   formatWotResult,
   getWotLineChartAnnotationsObject
 } from '../../utility-functions';
-import {patchTsGetExpandoInitializer} from '@angular/compiler-cli/ngcc/src/packages/patch_ts_expando_initializer';
-import {ChartDataSets, ChartPoint} from 'chart.js';
+import { patchTsGetExpandoInitializer } from '@angular/compiler-cli/ngcc/src/packages/patch_ts_expando_initializer';
+import { ChartDataSets, ChartPoint } from 'chart.js';
 import * as moment from 'moment';
 import { CounselingSummary } from '../generated-data-api/models/CounselingSummary';
 import { CounselingService } from './counseling.service';
@@ -66,6 +66,7 @@ import { EducationService } from './education.service';
 import { EducationSummary } from '../generated-data-api/models/EducationSummary';
 import { ReferralSummary } from '../generated-data-api/models/ReferralSummary';
 import { ReferralService } from './referrals.service';
+import { ObservationsService } from './observations.service';
 
 @Injectable({
   providedIn: 'root'
@@ -74,14 +75,15 @@ import { ReferralService } from './referrals.service';
 export class DataService {
 
   constructor(private subjectdataservice: SubjectDataService,
-              private careplanservice: CareplanService,
-              private goalsdataservice: GoalsDataService,
-              private contactdataService: ContactsService,
-              private medicationdataService: MedicationService,
-              private counselingService: CounselingService,
-              private educationService: EducationService,
-              private referralService: ReferralService
-              ) {
+    private careplanservice: CareplanService,
+    private goalsdataservice: GoalsDataService,
+    private contactdataService: ContactsService,
+    private medicationdataService: MedicationService,
+    private counselingService: CounselingService,
+    private educationService: EducationService,
+    private referralService: ReferralService,
+    private observationsService: ObservationsService
+  ) {
     this.activeMedications = emptyMediciationSummary;
     this.education = emptyEducation;
     this.counseling = emptyCounseling;
@@ -137,9 +139,8 @@ export class DataService {
     this.mainfhirserver = server;
     let headersobj = new HttpHeaders();
     headersobj = headersobj.set('Content-Type', 'application/json').set('mcc-fhir-server', server).set('mcc-token', token);
-    this.commonHttpOptions = {
-      headers: headersobj
-    };
+    this.commonHttpOptions = { headers: headersobj };
+    this.observationsService.HTTP_OPTIONS =  { headers: headersobj };
     this.subjectdataservice.httpOptions = this.commonHttpOptions;
     this.careplanservice.httpOptions = this.commonHttpOptions;
     this.goalsdataservice.httpOptions = this.commonHttpOptions;
@@ -266,19 +267,19 @@ export class DataService {
 
   async updateCounseling(): Promise<boolean> {
     this.counselingService.getCounselingSummaries(this.currentPatientId, this.currentCareplanId)
-    .subscribe(counseling => this.counseling = counseling);
+      .subscribe(counseling => this.counseling = counseling);
     return true;
   }
 
   async updateReferrals(): Promise<boolean> {
     this.referralService.getReferralSummaries(this.currentPatientId, this.currentCareplanId)
-    .subscribe(referrals => this.referrals = referrals);
+      .subscribe(referrals => this.referrals = referrals);
     return true;
   }
 
   async updateEducation(): Promise<boolean> {
     this.educationService.getEducationSummaries(this.currentPatientId, this.currentCareplanId)
-    .subscribe(education => this.education = education);
+      .subscribe(education => this.education = education);
     return true;
   }
 
@@ -322,15 +323,15 @@ export class DataService {
       .pipe(
         concatMap(goals => this.goalsdataservice.getPatientGoalTargets(patientId, goals.activeTargets)),
       ).subscribe(res => {
-      this.targetValues.push(res);
-      this.targetValuesDataSource.data = this.targetValues;
-    });
+        this.targetValues.push(res);
+        this.targetValuesDataSource.data = this.targetValues;
+      });
     return true;
   }
 
   async getPatientBPInfo(patientId): Promise<boolean> {
-    const systolicChartData: ChartDataSets = {data: [], label: 'Systolic', fill: false};
-    const diastolicChartData: ChartDataSets = {data: [], label: 'Diastolic', fill: false};
+    const systolicChartData: ChartDataSets = { data: [], label: 'Systolic', fill: false };
+    const diastolicChartData: ChartDataSets = { data: [], label: 'Diastolic', fill: false };
     // const xAxisLabels: string[] = [];
     const xAxisLabels: string[] = [];
     this.vitalSigns = emptyVitalSigns;
@@ -368,7 +369,7 @@ export class DataService {
             }
             // @ts-ignore
             xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
-              moment(vs.date.toString()).format('DD'),
+            moment(vs.date.toString()).format('DD'),
               yr]
             );
           });
@@ -395,7 +396,7 @@ export class DataService {
   }
 
   async getPatientEgfrInfo(patientId): Promise<boolean> {
-    const egfrChartData: ChartDataSets = {data: [], label: 'eGfr', fill: false};
+    const egfrChartData: ChartDataSets = { data: [], label: 'eGfr', fill: false };
     const xAxisLabels: string[] = [];
     this.egfr = emptyEgfr;
     this.egfr.tableData = [];
@@ -420,7 +421,7 @@ export class DataService {
           this.egfr.suggestedMax = maxDate;
           const lineChartOptions = getLineChartOptionsObject(10, 70, this.egfr.suggestedMin, this.egfr.suggestedMax);
           const lineChartAnnotations = getEgrLineChartAnnotationsObject();
-          this.egfr.lineChartOptions = {...lineChartOptions, annotation: lineChartAnnotations};
+          this.egfr.lineChartOptions = { ...lineChartOptions, annotation: lineChartAnnotations };
           this.egfr.xAxisLabels = [];
           let yr = '';
           let prevYr = '';
@@ -433,7 +434,7 @@ export class DataService {
             }
             // @ts-ignore
             xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
-              moment(vs.date.toString()).format('DD'),
+            moment(vs.date.toString()).format('DD'),
               yr]
             );
           });
@@ -454,7 +455,7 @@ export class DataService {
   }
 
   async getPatientUacrInfo(patientId): Promise<boolean> {
-    const uacrChartData: ChartDataSets = {data: [], label: 'Uacr', fill: false};
+    const uacrChartData: ChartDataSets = { data: [], label: 'Uacr', fill: false };
     const xAxisLabels: string[] = [];
     this.uacr = emptyUacr;
     this.uacr.tableData = [];
@@ -479,7 +480,7 @@ export class DataService {
           this.uacr.suggestedMax = maxDate;
           const lineChartOptions = getLineChartOptionsObject(0, 400, this.uacr.suggestedMin, this.uacr.suggestedMax);
           const lineChartAnnotations = getUacrLineChartAnnotationsObject();
-          this.uacr.lineChartOptions = {...lineChartOptions, annotation: lineChartAnnotations};
+          this.uacr.lineChartOptions = { ...lineChartOptions, annotation: lineChartAnnotations };
           this.uacr.xAxisLabels = [];
           let yr = '';
           let prevYr = '';
@@ -492,7 +493,7 @@ export class DataService {
             }
             // @ts-ignore
             xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
-              moment(vs.date.toString()).format('DD'),
+            moment(vs.date.toString()).format('DD'),
               yr]
             );
           });
@@ -513,7 +514,7 @@ export class DataService {
   }
 
   async getPatientWotInfo(patientId): Promise<boolean> {
-    const wotChartData: ChartDataSets = {data: [], label: 'Wot', fill: false};
+    const wotChartData: ChartDataSets = { data: [], label: 'Wot', fill: false };
     const xAxisLabels: string[] = [];
     this.wot = emptyWot;
     this.wot.tableData = [];
@@ -538,7 +539,7 @@ export class DataService {
           this.wot.suggestedMax = maxDate;
           const lineChartOptions = getLineChartOptionsObject(50, 280, this.wot.suggestedMin, this.wot.suggestedMax);
           const lineChartAnnotations = getWotLineChartAnnotationsObject();
-          this.wot.lineChartOptions = {...lineChartOptions, annotation: lineChartAnnotations};
+          this.wot.lineChartOptions = { ...lineChartOptions, annotation: lineChartAnnotations };
           this.wot.xAxisLabels = [];
           let yr = '';
           let prevYr = '';
@@ -551,7 +552,7 @@ export class DataService {
             }
             // @ts-ignore
             xAxisLabels.push([moment(vs.date.toString()).format('MMM'),
-              moment(vs.date.toString()).format('DD'),
+            moment(vs.date.toString()).format('DD'),
               yr]
             );
           });

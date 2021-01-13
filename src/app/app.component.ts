@@ -17,6 +17,7 @@ import {Observable} from 'rxjs';
 import {startWith, debounceTime, distinctUntilChanged, switchMap, map} from 'rxjs/operators';
 import { MccCarePlan } from './generated-data-api/models/MccCarePlan';
 import {ActivatedRoute, Router} from '@angular/router';
+import { ObservationsService } from './services/observations.service';
 
 
 @Component({
@@ -35,7 +36,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   constructor(public dataservice: DataService, public subjectdataservice: SubjectDataService,
               private route: ActivatedRoute, private changeDetector: ChangeDetectorRef,
-              private router: Router) {
+              private router: Router,
+              private observationsService: ObservationsService) {
 
     this.navLinks = [
       {
