@@ -208,11 +208,7 @@ export class GoalsDataService {
 
   getPatientWot(patientId: string): Observable<WotTableData> {
     return new Observable(observer => {
-      this.getObservations(patientId, observationCodes.Wot)
-        .pipe(finalize(() => {
-          observer.complete();
-        }))
-        .subscribe(observations => {
+      this.getObservations(patientId, observationCodes.Wot).subscribe(observations => {
           observations.map(obs => {
             switch (obs.code.coding[0].code) {
               case observationCodes.Wot:
