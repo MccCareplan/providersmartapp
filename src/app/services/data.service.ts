@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MccObservation, MccPatient, ServiceRequestSummary } from '../generated-data-api';
+import { MccObservation, MccPatient } from '../generated-data-api';
 import { SubjectDataService } from './subject-data-service.service';
 import { CareplanService } from './careplan.service';
 import { GoalsDataService } from './goals-data-service.service';
@@ -7,7 +7,6 @@ import { Contact, GoalSummary, MccCarePlan } from '../generated-data-api';
 import { SocialConcern } from '../generated-data-api';
 import { ConditionLists } from '../generated-data-api';
 import { TargetValue } from '../datamodel/targetvalue';
-
 import {
   dummyPatientId,
   dummyCareplanId,
@@ -69,7 +68,6 @@ import { ReferralSummary } from '../generated-data-api/models/ReferralSummary';
 import { ReferralService } from './referrals.service';
 import { ObservationsService } from './observations.service';
 import { Constants } from '../common/constants';
-import { SeviceRequestService } from './service-request.service';
 
 declare var window: any;
 
@@ -87,7 +85,6 @@ export class DataService {
     private medicationdataService: MedicationService,
     private counselingService: CounselingService,
     private educationService: EducationService,
-    private servicerequestService:SeviceRequestService,
     private referralService: ReferralService,
     private messageService: MessageService,
     private obsService: ObservationsService
@@ -134,7 +131,6 @@ export class DataService {
   activeMedicationsDataSource = new MatTableDataSource(this.activeMedications);
   consolidatedGoalsDataSource = new MatTableDataSource(this.allGoals);
 
-  servicerequest :  ServiceRequestSummary[];
   education: EducationSummary[];
   counseling: CounselingSummary[];
   referrals: ReferralSummary[];
@@ -175,7 +171,6 @@ therapy: MccObservation[];
     this.educationService.httpOptions = this.commonHttpOptions;
     this.referralService.httpOptions = this.commonHttpOptions;
     this.obsService.HTTP_OPTIONS = this.commonHttpOptions;
-    this.servicerequestService.HTTP_OPTIONS = this.commonHttpOptions;
   }
 
 
@@ -239,7 +234,6 @@ therapy: MccObservation[];
       this.updateContacts();
       this.updateCounseling();
       this.updateEducation();
-      this.updateServiceRequest();
       this.updateReferrals();
       this.getPatientGoalTargets(this.currentPatientId).then(() => {
         window[Constants.TargetsIsLoaded] = true;
@@ -270,7 +264,6 @@ therapy: MccObservation[];
       await this.updateContacts();
       await this.updateCounseling();
       await this.updateEducation();
-      await this.updateServiceRequest();
       await this.updateReferrals();
       await this.updateMedications();
     }
@@ -298,7 +291,6 @@ therapy: MccObservation[];
           this.updateContacts();
           this.updateCounseling();
           this.updateEducation();
-          this.updateServiceRequest();
           this.updateMedications();
           this.updateReferrals();
           this.updateLabResults(this.currentPatientId, this.currentCareplanId);
@@ -362,43 +354,45 @@ therapy: MccObservation[];
 
   async updateActivities(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'activity')
-      .subscribe(activities => this.activities = activities);
+      .then(activities => {
+        this.activities = activities
+      });
     return true;
   }
 
   async updateExam(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'exam')
-      .subscribe(exam => this.exam = exam);
+      .then(exam => this.exam = exam);
     return true;
   }
 
   async updateQuestionaires(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'survey')
-      .subscribe(questionaires => this.questionaires = questionaires);
+      .then(questionaires => this.questionaires = questionaires);
     return true;
   }
 
   async updateProcedure(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'procedure')
-      .subscribe(procedure => this.procedure = procedure);
+      .then(procedure => this.procedure = procedure);
     return true;
   }
 
   async updateHistory(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'social-history')
-      .subscribe(history => this.history = history);
+      .then(history => this.history = history);
     return true;
   }
 
   async updateImaging(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'imaging')
-      .subscribe(imaging => this.imaging = imaging);
+      .then(imaging => this.imaging = imaging);
     return true;
   }
 
   async updateTherapy(): Promise<boolean> {
     this.obsService.getObservationsByCategory(this.currentPatientId, 'therapy')
-      .subscribe(therapy => this.therapy = therapy);
+      .then(therapy => this.therapy = therapy);
     return true;
   }
 
@@ -414,12 +408,6 @@ therapy: MccObservation[];
   async updateEducation(): Promise<boolean> {
     this.educationService.getEducationSummaries(this.currentPatientId, this.currentCareplanId)
       .subscribe(education => { this.education = education; window[Constants.EducationIsLoaded] = true; });
-    return true;
-  }
-
-  async updateServiceRequest(): Promise<boolean> {
-    this.servicerequestService.getServiceRequestSummaries(this.currentPatientId, this.currentCareplanId)
-      .subscribe(servicerequest => { this.servicerequest = servicerequest; window[Constants.ServiceRequestIsLoaded] = true; });
     return true;
   }
 

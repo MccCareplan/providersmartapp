@@ -7,6 +7,7 @@ import { MaintenanceAndInterventionsComponent } from './maintenance-and-interven
 import { HealthStatusComponent } from './health-status/health-status.component';
 import { CareTeamComponent } from './care-team/care-team.component';
 import {HealthGuard} from './health.guard';
+import { Launch } from './launch/launch';
 
 const routes: Routes = [
   { path: 'health', component:  HealthAndSocialConcernsComponent},
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'maint', component: MaintenanceAndInterventionsComponent},
   { path: 'status', component: HealthStatusComponent},
   { path: 'care', component: CareTeamComponent},
+  { path: 'launch', component: Launch},
   { path: '', redirectTo: 'health', pathMatch: 'full',  canActivate: [HealthGuard] }
 ];
 export const appRouting = RouterModule.forRoot(routes, {enableTracing: false});

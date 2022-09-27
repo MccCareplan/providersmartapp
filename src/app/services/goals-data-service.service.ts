@@ -85,7 +85,7 @@ foo = gt.measure.coding[0].code;
               if (obs.status !== 'notfound') {
                 if (obs.value !== undefined) {
                   //  TODO:  Fix to handle as any value type
-                  mostRecentResultValue = obs.value.quantityValue.value.toString() + obs.value.quantityValue.unit;
+                  mostRecentResultValue = obs.value.quantityValue.value.toString();
                 }
                 if (obs.components !== undefined) {
                   obs.components.map(c => {
@@ -112,7 +112,6 @@ foo = gt.measure.coding[0].code;
 
                 [formattedTargetValue, rowHighlighted] = formatGoalTargetValue(gt, mostRecentResultValue);
                 const tv: TargetValue = {
-                  code: gt.measure.coding[0].code,
                   measure: gt.measure.text,
                   date: observationDate, // todo: Get observation date when API is updated
                   mostRecentResult: mostRecentResultValue.toString(),

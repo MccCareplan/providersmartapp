@@ -1,3 +1,4 @@
+import { Observation } from 'fhir/r4';
 import { Effective, GenericType, GoalTarget, MccDate } from '../generated-data-api';
 
 export function getInnerValue(value: GenericType): any {
@@ -32,6 +33,45 @@ export function getInnerValue(value: GenericType): any {
     }
   }
   return rval;
+}
+
+function getDisplayValueExtract(value: any): any {
+  if (value.valueString) {
+    return value.valueString;
+  } else if (value.valueInteger) {
+    return value.valueInteger.toString();
+  } else if (value.valueBoolean) {
+    return String(value.valueBoolean)
+  } else if (value.valueCodeableConcept) {
+    return value.valueCodeableConcept.coding[0].display;
+  } else if (value.valueQuantity) {
+    return `${value.valueQuantity.value} ${value.valueQuantity.unit ?? ''}`
+  } else if (value.valueRange) {
+    return `${value.valueRange.low.value} - ${value.valueRange.high.value} ${value.valueRange.high.unit}`
+  }
+}
+
+export function getDisplayValueNew(value: Observation): any {
+  let formatted = 'Unknown Type';
+
+  if (value !== undefined) {
+
+    if (value.component) {
+      const componentValue = value.component?.reduce((acc, curr) => {
+        if (getDisplayValueExtract(curr)) {
+          acc.push(getDisplayValueExtract(curr));
+        }
+
+        return acc;
+      }, [])?.join(',');
+
+      formatted = componentValue;
+    } else {
+      formatted = getDisplayValueExtract(value);
+    }
+
+    return formatted;
+  }
 }
 
 export function getDisplayValue(value: GenericType): any {
@@ -84,6 +124,18 @@ export function getDisplayValue(value: GenericType): any {
         break;
     }
     return formatted;
+  }
+}
+
+export function formatEffectiveDateNew(ef: string): string {
+  if (!ef) {
+    return "";
+  }
+  if (ef) {
+    const date = new Date(ef);
+    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+      .toISOString()
+      .split('T')[0];
   }
 }
 

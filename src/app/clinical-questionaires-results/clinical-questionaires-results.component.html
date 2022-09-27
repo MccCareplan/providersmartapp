@@ -1,8 +1,8 @@
 <div class="group-header">Questionaires/Surveys</div>
 <table class="resultTable" width="100%" valign="top">
-    
+
   <tr *ngFor="let res of dataservice.questionaires">
-    <td>{{res.code.text}}</td>
-    <td>{{ getDisplayValue(  res.value) }}</td>
-    <td>{{ getEffectiveValue(res.effective) }}</td>
+    <td>{{res.code.coding[0].display}}</td>
+    <td>{{getDisplayValue(res)}}</td>
+    <td>{{getEffectiveValue(res.effectiveDateTime)}}</td>
   </tr>

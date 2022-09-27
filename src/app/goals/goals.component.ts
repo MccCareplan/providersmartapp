@@ -58,8 +58,8 @@ export class GoalsComponent implements OnInit {
 
   openDialog() {
     const dialogRef = this.dialog.open(CourseDialogComponent,{
-      height: '80%',
-      width: '100%',
+      height: '750px',
+      width: '600px',
     });
 
     dialogRef.afterClosed().subscribe(result => {
