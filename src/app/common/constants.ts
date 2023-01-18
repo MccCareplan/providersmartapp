@@ -16,4 +16,5 @@ export class Constants {
     static featureToggling: any;
     static labMappings: any;
     static vitalMappings: any;
+    static categoryMappings: any;
 }

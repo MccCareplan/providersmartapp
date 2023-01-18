@@ -5,6 +5,8 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { GoalSummary } from '../generated-data-api';
 import moment from 'moment';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { GoalDialogComponent } from '../goals-dialog/goal-dialog.component';
 
 @Component({
   selector: 'app-consolidated-goals',
@@ -14,10 +16,10 @@ import moment from 'moment';
 export class ConsolidatedGoalsComponent implements OnInit, AfterViewInit {
   consolidatedGoalsDataSource: MatTableDataSource<GoalSummary>;
 
-  constructor(public dataService: DataService) {
+  constructor(public dataService: DataService,private dialog: MatDialog) {
   }
 
-  displayedColumns = ['rank', 'lfcstatus', 'description', 'created', 'targetdate', 'status', 'acceptance', 'expressedby', 'expressedbytype'];
+  displayedColumns = ['rank', 'lfcstatus', 'description', 'addresses', 'created', 'targetdate', 'status', 'acceptance', 'expressedby', 'expressedbytype'];
 
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -56,5 +58,31 @@ export class ConsolidatedGoalsComponent implements OnInit, AfterViewInit {
         }
       }
     };
+  }
+
+
+  refresh() {
+    this.dataService.consolidatedGoalsDataSource;
+  }
+
+
+
+  openDialog(goal) {
+
+    console.error('openDialogopenDialogopenDialogopenDialogopenDialogopenDialogopenDialog');
+    console.error('xxxxopenDialogopenDialogopenDialogopenDialogopenDialogopenDialogopenDialog' +goal.addresses);
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.hasBackdrop = true;
+    dialogConfig.width = '700px';
+    dialogConfig.data = {
+       lifecycleStatus: goal.lifecycleStatus,
+    description: goal.description,
+     achievementStatus: goal.achievementStatus.text
+
+
+    };
+    this.dialog.open(GoalDialogComponent, dialogConfig);
   }
 }

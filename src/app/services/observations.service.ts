@@ -1,9 +1,17 @@
+import { Observation, QuestionnaireResponse } from 'fhir/r4';
+import {
+  getObservations as EccGetObservations,
+  getObservation as EccGetObservation,
+  getObservationsByValueSet as EccGetObservationsByValueSet,
+  getQuestionnaireItem as EccGetQuestionnaireItem,
+  getQuestionnaireItems as EccGetQuestionnaireItems,
+  getObservationsByCategory as EccGetObservationsByCategory,
+} from 'e-care-common-data-services';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "src/environments/environment";
 import { Constants } from "../common/constants";
-import { MccObservation, SimpleQuestionnaireItem } from "../generated-data-api";
-import { getDisplayValue, formatEffectiveDate, formatMccDate } from "../util/utility-functions";
+import { getDisplayValueNew, formatEffectiveDateNew } from "../util/utility-functions";
 
 interface FormattedResult {
     name: string;
@@ -24,6 +32,7 @@ export class ObservationsService {
     public QUESTIONNAIRES: Map<string, any> = new Map<string, any>();
 
     _defaultUrl = environment.mccapiUrl;
+  log: any;
     constructor(
         protected http: HttpClient
     ) {
@@ -38,12 +47,12 @@ export class ObservationsService {
             return Promise.resolve(returnVal);
         }
         else {
-            return this.http.get(`${environment.mccapiUrl}/${this._observationUrl}?subject=${patientId}&code=${code}`, this.HTTP_OPTIONS).toPromise()
-                .then((res: MccObservation) => {
+            return EccGetObservation(code)
+                .then((res: Observation) => {
                     this.OBSERVATIONS.set(key, res);
                     return res;
                 }).catch((reason) => {
-                    console.log("Error querying: " + this._observationUrl + "&code=" + code);
+                    console.log("Error querying: " + "getObservation" + "?code=" + code);
                 });
         }
     };
@@ -60,12 +69,12 @@ export class ObservationsService {
             return Promise.resolve(this.OBSERVATIONS.get(key));
         }
         else {
-            return this.http.get(`${environment.mccapiUrl}/${this._observationsUrl}?subject=${patientId}&code=${code}&sort=descending`, this.HTTP_OPTIONS).toPromise()
-                .then((res: MccObservation[]) => {
+            return EccGetObservations(code, 'code')
+                .then((res: Observation[]) => {
                     this.OBSERVATIONS.set(key, res);
                     return res;
                 }).catch((reason) => {
-                    console.log("Error querying: " + `${environment.mccapiUrl}/${this._observationsUrl}?subject=${patientId}&code=${code}&sort=descending`);
+                    console.log("Error querying: " + `getObservation?subject=${patientId}&code=${code}&sort=descending`);
                 });
         }
     };
@@ -83,8 +92,8 @@ export class ObservationsService {
             return Promise.resolve(returnVal);
         }
         else {
-            return this.http.get(url, this.HTTP_OPTIONS).toPromise()
-                .then((res: MccObservation[]) => {
+            return EccGetObservationsByValueSet(valueSet, sort, max)
+                .then((res: Observation[]) => {
                     this.OBSERVATIONS.set(key, res);
                     return res;
                 }).catch((reason) => {
@@ -105,8 +114,8 @@ export class ObservationsService {
             return Promise.resolve(returnVal);
         }
         else {
-            return this.http.get(`${environment.mccapiUrl}/${this._observationsByPanelUrl}?subject=${patientId}&code=${code}` + (sort ? `&sort=${sort}` : ``) + (max ? `&max=${max}` : ``) + `&mode=panel`, this.HTTP_OPTIONS).toPromise()
-                .then((res: MccObservation[]) => {
+            return EccGetObservations(code, 'panel', sort, max)
+                .then((res: Observation[]) => {
                     this.OBSERVATIONS.set(key, res);
                     return res;
                 }).catch((reason) => {
@@ -123,8 +132,8 @@ export class ObservationsService {
             let returnVal = this.QUESTIONNAIRES.get(key);
             return Promise.resolve(returnVal);
         } else {
-            return this.http.get(`${environment.mccapiUrl}/${this._questionnaireLatestItemUrl}?subject=${patientId}&code=${code}`, this.HTTP_OPTIONS).toPromise()
-                .then((res: SimpleQuestionnaireItem) => {
+            return EccGetQuestionnaireItem(code)
+                .then((res: QuestionnaireResponse) => {
                     this.QUESTIONNAIRES.set(key, res);
                     return res;
                 }).catch((reason) => {
@@ -140,8 +149,8 @@ export class ObservationsService {
         if (this.QUESTIONNAIRES.has(key)) {
             return Promise.resolve(this.QUESTIONNAIRES.get(key));
         } else {
-            return this.http.get(`${environment.mccapiUrl}/${this._questionnaireAllItemsUrl}?subject=${patientId}&code=${code}`, this.HTTP_OPTIONS).toPromise()
-                .then((res: SimpleQuestionnaireItem[]) => {
+            return EccGetQuestionnaireItems(code)
+                .then((res: QuestionnaireResponse[]) => {
                     this.QUESTIONNAIRES.set(key, res);
                     return res;
                 }).catch((reason) => {
@@ -179,27 +188,38 @@ export class ObservationsService {
             resArr.forEach((res: any, index: number) => {
                 let correspondingCall = callsToMake[index];
                 if (!res || res.length < 1 || res.status === "notfound" || res.fhirid === "notfound") {
-                    results.push({ name: correspondingCall.name, value: "No Data Available", date: "" })
+                    // results.push({ name: correspondingCall.name, value: "xxxNo Data Availablexxx", date: "" })
                 }
                 else {
                     switch (correspondingCall.type) {
                         case "code":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res).value), date: formatEffectiveDate((<MccObservation>res).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res)), date: formatEffectiveDateNew((<Observation>res).effectiveDateTime) });
                             break;
                         case "valueset":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res[0]).value), date: formatEffectiveDate((<MccObservation>res[0]).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res[0])), date: formatEffectiveDateNew((<Observation>res[0]).effectiveDateTime) });
                             break;
                         case "panel":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res[0]).value), date: formatEffectiveDate((<MccObservation>res[0]).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res[0])), date: formatEffectiveDateNew((<Observation>res[0]).effectiveDateTime) });
                             break;
                         case "question":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<SimpleQuestionnaireItem>res).item.answers[0].value), date: formatMccDate((<SimpleQuestionnaireItem>res).authored) })
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<QuestionnaireResponse>res).item[0].answer[0] as Observation), date: formatEffectiveDateNew((<QuestionnaireResponse>res).authored) })
                             break;
                     }
                 }
             });
             return results;
         });
+    }
+
+    _observationByCategoryURL= "observationsbycategory"
+    getObservationsByCategory(subjectId: string, category: string): Promise<any> {
+
+      return EccGetObservationsByCategory(category).then(res => {
+        return res;
+      }).catch(error => {
+        console.error({error})
+        console.log("Error querying: " + category);
+      });
     }
 
     getVitalSignResults(patientId: string, longTermCondition: string): any {
@@ -231,21 +251,21 @@ export class ObservationsService {
             resArr.forEach((res: any, index: number) => {
                 let correspondingCall = callsToMake[index];
                 if (!res || res.length < 1 || res.status === "notfound" || res.fhirid === "notfound") {
-                    results.push({ name: correspondingCall.name, value: "No Data Available", date: "" })
+                    // results.push({ name: correspondingCall.name, value: "No Data Available", date: "" })
                 }
                 else {
                     switch (correspondingCall.type) {
                         case "code":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res).value), date: formatEffectiveDate((<MccObservation>res).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res)), date: formatEffectiveDateNew((<Observation>res).effectiveDateTime) });
                             break;
                         case "valueset":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res[0]).value), date: formatEffectiveDate((<MccObservation>res[0]).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res[0])), date: formatEffectiveDateNew((<Observation>res[0]).effectiveDateTime) });
                             break;
                         case "panel":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<MccObservation>res[0]).value), date: formatEffectiveDate((<MccObservation>res[0]).effective) });
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<Observation>res[0])), date: formatEffectiveDateNew((<Observation>res[0]).effectiveDateTime) });
                             break;
                         case "question":
-                            results.push({ name: correspondingCall.name, value: getDisplayValue((<SimpleQuestionnaireItem>res).item.answers[0].value), date: formatMccDate((<SimpleQuestionnaireItem>res).authored) })
+                            results.push({ name: correspondingCall.name, value: getDisplayValueNew((<QuestionnaireResponse>res).item[0].answer[0] as Observation), date: formatEffectiveDateNew((<QuestionnaireResponse>res).authored) })
                             break;
                     }
                 }

@@ -1,3 +1,4 @@
+import { CarePlan } from 'fhir/r4';
 import {TargetValue} from './targetvalue';
 import {
   ConditionLists,
@@ -499,22 +500,25 @@ export const dummyConditions: ConditionLists = {
   inactiveConcerns: []
 };
 
-export const dummyCarePlan: MccCarePlan = {
-  title: '',
-  dateLastRevised: '',
+export const dummyCarePlan: CarePlan = {
+  title: 'Test careplan',
   addresses: [],
-  addressesSummary: '',
-  categorySummary: '',
-  categories: [],
   id: '',
-  periodStarts: '',
-  periodEnds: '',
-  status: '',
-  intent: '',
+  note: [],
+  category: [],
+  status: 'active',
+  intent: 'plan',
   description: 'No Care Plan Selected',
-  notes: '',
-  dateResourceLastUpdated: '',
-  fhirid: ''
+  resourceType: 'CarePlan',
+  subject: {},
+  meta: {
+    lastUpdated: '12/12/2022',
+    versionId: '',
+  },
+  period: {
+    start: '12/12/2022',
+    end: '12/12/2025',
+  }
 };
 
 export const emptySocialConcerns: SocialConcern[] = [];
