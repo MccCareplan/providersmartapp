@@ -19,4 +19,5 @@ export type GoalSummary = {
     acceptance?: string;
     targets?: Array<GoalTarget>;
     fhirid?: string;
+    server?: string;
 }

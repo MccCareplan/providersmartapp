@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import {MessageService} from './message.service';
-import {Demographic} from './datamodel/demographics';
-import {SocialConcerns} from './datamodel/socialconcerns';
+import { getSummarySocialConcerns } from 'e-care-common-data-services';
+import { MccSocialConcern } from 'e-care-common-data-services/build/main/types/mcc-types';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,8 @@ import {SocialConcerns} from './datamodel/socialconcerns';
 export class SocialConcernService {
 
 
-  private baseURL = 'http://localhost:8081/socialconcern';
-  private queryURL = 'http://localhost:8081/socialconcern';
+//  private baseURL = 'http://localhost:8081/socialconcern';
+//  private queryURL = 'http://localhost:8081/socialconcern';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -24,25 +24,24 @@ export class SocialConcernService {
 
 
   /** GET Demographic by id. Return `undefined` when id not found */
-  getSubjectNo404<Data>(id: string, subjectId: string): Observable<SocialConcerns> {
-    const url = `${this.baseURL}/${id}?subject={subjectId}`;
-    return this.http.get<SocialConcerns[]>(url)
+  getSubjectNo404(id: string, subjectId: string): Observable<MccSocialConcern> {
+
+    return from(getSummarySocialConcerns() as Promise<MccSocialConcern[]>)
       .pipe(
         map(socialConcerns => socialConcerns[0]), // returns a {0|1} element array
         tap(h => {
           const outcome = h ? `fetched` : `did not find`;
           this.log(`${outcome} hero id=${id}`);
         }),
-        catchError(this.handleError<SocialConcerns>(`Subject id=${subjectId}`))
+        catchError(this.handleError<MccSocialConcern>(`Subject id=${subjectId}`))
       );
   }
 
   /** GET Subject by id. Will 404 if id not found */
-  getSubject(id: string): Observable<Demographic> {
-    const url = `${this.baseURL}/${id}?subject={subjectId}`;
-    return this.http.get<Demographic>(url).pipe(
+  getSubject(id: string): Observable<MccSocialConcern[]> {
+    return from(getSummarySocialConcerns() as Promise<MccSocialConcern[]>).pipe(
       tap(_ => this.log(`fetched subject id=${id}`)),
-      catchError(this.handleError<Demographic>(`getSubject id=${id}`))
+      catchError(this.handleError<MccSocialConcern[]>(`getSubject id=${id}`))
     );
   }
 
